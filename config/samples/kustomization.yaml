@@ -1,0 +1,4 @@
+## Append samples of your project ##
+resources:
+- pod_v1alpha1_podcalculator.yaml
+#+kubebuilder:scaffold:manifestskustomizesamples
