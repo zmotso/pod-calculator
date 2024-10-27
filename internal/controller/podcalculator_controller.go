@@ -54,20 +54,7 @@ func (r *PodCalculatorReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	if calc.Spec.ConfigmapRef != nil {
-		confM := &corev1.ConfigMap{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      calc.Name,
-				Namespace: calc.Namespace,
-			},
-		}
-
-		if _, err = controllerutil.CreateOrUpdate(ctx, r.Client, confM, func() error {
-			confM.Data = map[string]string{
-				"pods": strconv.Itoa(len(pods.Items)),
-			}
-
-			return nil
-		}); err != nil {
+		if err = r.saveInConfigMap(ctx, calc, len(pods.Items)); err != nil {
 			return ctrl.Result{}, err
 		}
 
@@ -84,6 +71,25 @@ func (r *PodCalculatorReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	return ctrl.Result{
 		RequeueAfter: time.Second * 5,
 	}, nil
+}
+
+func (r *PodCalculatorReconciler) saveInConfigMap(ctx context.Context, calc *podv1alpha1.PodCalculator, count int) error {
+	confM := &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      calc.Name,
+			Namespace: calc.Namespace,
+		},
+	}
+
+	_, err := controllerutil.CreateOrUpdate(ctx, r.Client, confM, func() error {
+		confM.Data = map[string]string{
+			"pods": strconv.Itoa(count),
+		}
+
+		return nil
+	})
+
+	return err
 }
 
 // SetupWithManager sets up the controller with the Manager.
