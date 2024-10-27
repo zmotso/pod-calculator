@@ -6,4 +6,21 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: podcalculator-sample
 spec:
-  # TODO(user): Add fields here
+  namespace: default
+
+---
+
+apiVersion: pod.example.com/v1alpha1
+kind: PodCalculator
+metadata:
+  labels:
+    app.kubernetes.io/name: pod-calculator
+    app.kubernetes.io/managed-by: kustomize
+  name: podcalculator-sample
+spec:
+  namespace: default
+  labelsSelector:
+    app: tekton-pipelines-controller
+  configmapRef:
+    name: podcalculator-configmap
+    namespace: default

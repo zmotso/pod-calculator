@@ -6,17 +6,35 @@ import (
 
 // PodCalculatorSpec defines the desired state of PodCalculator
 type PodCalculatorSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// Namespace where to count pods.
+	// +required
+	Namespace string `json:"namespace"`
 
-	// Foo is an example field of PodCalculator. Edit podcalculator_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	//LabelsSelector to search pods.
+	// +optional
+	// +nullable
+	LabelsSelector map[string]string `json:"labelsSelector"`
+
+	// Reference of the configmap where the pods count should be stored.
+	// +optional
+	ConfigmapRef *ConfigMapRef `json:"configmapRef"`
 }
 
 // PodCalculatorStatus defines the observed state of PodCalculator
 type PodCalculatorStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// Pods count.
+	// +required
+	Count int `json:"count"`
+}
+
+type ConfigMapRef struct {
+	// Namespace of configmap.
+	// +required
+	Namespace string `json:"namespace"`
+
+	// Name of configmap.
+	// +required
+	Name string `json:"name"`
 }
 
 //+kubebuilder:object:root=true

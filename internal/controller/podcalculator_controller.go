@@ -2,7 +2,13 @@ package controller
 
 import (
 	"context"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"strconv"
+	"time"
 
+	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -21,21 +27,63 @@ type PodCalculatorReconciler struct {
 //+kubebuilder:rbac:groups=pod.example.com,resources=podcalculators/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=pod.example.com,resources=podcalculators/finalizers,verbs=update
 
+//+kubebuilder:rbac:groups=v1,resources=configmap,verbs=get;list;create;update;patch
+
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the PodCalculator object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
-//
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.17.3/pkg/reconcile
 func (r *PodCalculatorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	reqLogger := log.FromContext(ctx)
 
-	// TODO(user): your logic here
+	reqLogger.Info("Reconciling PodCalculator")
 
-	return ctrl.Result{}, nil
+	calc := &podv1alpha1.PodCalculator{}
+	err := r.Get(ctx, req.NamespacedName, calc)
+	if err != nil {
+		if k8sErrors.IsNotFound(err) {
+			reqLogger.Info("PodCalculator resource not found. Ignoring since object must be deleted.")
+			return ctrl.Result{}, nil
+		}
+
+		return ctrl.Result{}, err
+	}
+
+	pods := corev1.PodList{}
+	err = r.List(ctx, &pods, client.InNamespace(calc.Namespace), client.MatchingLabels(calc.Spec.LabelsSelector))
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	if calc.Spec.ConfigmapRef != nil {
+		confM := &corev1.ConfigMap{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      calc.Name,
+				Namespace: calc.Namespace,
+			},
+		}
+
+		if _, err = controllerutil.CreateOrUpdate(ctx, r.Client, confM, func() error {
+			confM.Data = map[string]string{
+				"pods": strconv.Itoa(len(pods.Items)),
+			}
+
+			return nil
+		}); err != nil {
+			return ctrl.Result{}, err
+		}
+
+		reqLogger.Info("ConfigMap with pods count created")
+	}
+
+	calc.Status.Count = len(pods.Items)
+	if err = r.Status().Update(ctx, calc); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	reqLogger.Info("PodCalculator reconciled")
+
+	return ctrl.Result{
+		RequeueAfter: time.Second * 5,
+	}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
