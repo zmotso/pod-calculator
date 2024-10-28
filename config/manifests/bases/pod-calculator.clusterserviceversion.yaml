@@ -1,0 +1,47 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: '[]'
+    capabilities: Basic Install
+  name: pod-calculator.v0.0.0
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - description: PodCalculator is the Schema for the podcalculators API
+      displayName: Pod Calculator
+      kind: PodCalculator
+      name: podcalculators.pod.example.com
+      version: v1alpha1
+  description: Example of the operator SDK
+  displayName: Pod calculator - operator example
+  icon:
+  - base64data: ""
+    mediatype: ""
+  install:
+    spec:
+      deployments: null
+    strategy: ""
+  installModes:
+  - supported: false
+    type: OwnNamespace
+  - supported: false
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - operator
+  - kubernetes
+  - operatorsdk
+  links:
+  - name: Pod Calculator
+    url: https://pod-calculator.domain
+  maturity: alpha
+  provider:
+    name: zmotso
+    url: https://github.com/zmotso
+  version: 0.0.0
