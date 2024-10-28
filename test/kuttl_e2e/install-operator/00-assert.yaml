@@ -1,0 +1,7 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pod-calculator-controller-manager
+  namespace: pod-calculator-system
+status:
+  readyReplicas: 1

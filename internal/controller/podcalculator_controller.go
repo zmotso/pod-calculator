@@ -19,8 +19,13 @@ import (
 
 // PodCalculatorReconciler reconciles a PodCalculator object
 type PodCalculatorReconciler struct {
-	client.Client
-	Scheme *runtime.Scheme
+	k8sClient client.Client
+	scheme    *runtime.Scheme
+}
+
+// NewPodCalculatorReconciler creates a new PodCalculatorReconciler instance.
+func NewPodCalculatorReconciler(k8sClient client.Client, scheme *runtime.Scheme) *PodCalculatorReconciler {
+	return &PodCalculatorReconciler{k8sClient: k8sClient, scheme: scheme}
 }
 
 //+kubebuilder:rbac:groups=pod.example.com,resources=podcalculators,verbs=get;list;watch;create;update;patch;delete
@@ -37,7 +42,7 @@ func (r *PodCalculatorReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	reqLogger.Info("Reconciling PodCalculator")
 
 	calc := &podv1alpha1.PodCalculator{}
-	err := r.Get(ctx, req.NamespacedName, calc)
+	err := r.k8sClient.Get(ctx, req.NamespacedName, calc)
 	if err != nil {
 		if k8sErrors.IsNotFound(err) {
 			reqLogger.Info("PodCalculator resource not found. Ignoring since object must be deleted.")
@@ -48,7 +53,7 @@ func (r *PodCalculatorReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	pods := corev1.PodList{}
-	err = r.List(ctx, &pods, client.InNamespace(calc.Namespace), client.MatchingLabels(calc.Spec.LabelsSelector))
+	err = r.k8sClient.List(ctx, &pods, client.InNamespace(calc.Namespace), client.MatchingLabels(calc.Spec.LabelsSelector))
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -62,7 +67,7 @@ func (r *PodCalculatorReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	calc.Status.Count = len(pods.Items)
-	if err = r.Status().Update(ctx, calc); err != nil {
+	if err = r.k8sClient.Status().Update(ctx, calc); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -81,7 +86,7 @@ func (r *PodCalculatorReconciler) saveInConfigMap(ctx context.Context, calc *pod
 		},
 	}
 
-	_, err := controllerutil.CreateOrUpdate(ctx, r.Client, confM, func() error {
+	_, err := controllerutil.CreateOrUpdate(ctx, r.k8sClient, confM, func() error {
 		confM.Data = map[string]string{
 			"pods": strconv.Itoa(count),
 		}
