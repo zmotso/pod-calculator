@@ -1,0 +1,11 @@
+apiVersion: v2
+description: A Helm chart for Pod calculator Operator
+home: https://github.com/zmotso/pod-calculator
+name: pod-calculator
+type: application
+version: 0.0.1
+appVersion: 0.0.1
+keywords:
+  - operator
+sources:
+  - https://github.com/zmotso/pod-calculator

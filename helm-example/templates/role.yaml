@@ -2,27 +2,8 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: manager-role
+  name: pod-calculator-manager-role
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - configmaps
-  verbs:
-  - create
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - pods
-  verbs:
-  - get
-  - list
-  - watch
 - apiGroups:
   - pod.example.com
   resources:
@@ -49,3 +30,21 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - v1
+  resources:
+  - configmap
+  verbs:
+  - create
+  - get
+  - list
+  - patch
+  - update
+- apiGroups:
+  - v1
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch

@@ -1,0 +1,2 @@
+name: pod-calculator
+image: 'docker.io/zmotso/pod-calculator:0.0.1'

@@ -32,7 +32,8 @@ func NewPodCalculatorReconciler(k8sClient client.Client, scheme *runtime.Scheme)
 //+kubebuilder:rbac:groups=pod.example.com,resources=podcalculators/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=pod.example.com,resources=podcalculators/finalizers,verbs=update
 
-//+kubebuilder:rbac:groups=v1,resources=configmap,verbs=get;list;create;update;patch
+//+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch
+//+kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -84,6 +85,10 @@ func (r *PodCalculatorReconciler) saveInConfigMap(ctx context.Context, calc *pod
 			Name:      calc.Name,
 			Namespace: calc.Namespace,
 		},
+	}
+
+	if err := controllerutil.SetControllerReference(calc, confM, r.scheme); err != nil {
+		return err
 	}
 
 	_, err := controllerutil.CreateOrUpdate(ctx, r.k8sClient, confM, func() error {

@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  namespace: default
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-with-label
+  namespace: default
+  labels:
+    app: nginx
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+
+---
+apiVersion: pod.example.com/v1alpha1
+kind: PodCalculator
+metadata:
+  name: podcalculator
+spec:
+  namespace: default
+
+---
+
+apiVersion: pod.example.com/v1alpha1
+kind: PodCalculator
+metadata:
+  name: podcalculator-with-label
+spec:
+  namespace: default
+  labelsSelector:
+    app: nginx
+  configmapRef:
+    name: podcalculator-configmap
+    namespace: default
