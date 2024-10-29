@@ -14,7 +14,12 @@ spec:
     singular: podcalculator
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - description: Pod count
+      jsonPath: .status.count
+      name: Count
+      type: integer
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: PodCalculator is the Schema for the podcalculators API

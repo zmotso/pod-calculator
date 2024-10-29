@@ -39,6 +39,7 @@ type ConfigMapRef struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Count",type="integer",JSONPath=".status.count",description="Pod count"
 
 // PodCalculator is the Schema for the podcalculators API
 type PodCalculator struct {
